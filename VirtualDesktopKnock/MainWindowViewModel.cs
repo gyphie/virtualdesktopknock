@@ -35,8 +35,10 @@ namespace VirtualDesktopKnock
 		private Rect screenBounds;
 		public Rect ScreenBounds
 		{
-			get { }
-			set { }
+			get { return this.screenBounds; }
+			set { this.screenBounds = value;
+				this.OnPropertyChanged("ScreenBoundsLabel");
+			}
 		}
 		public string ScreenBoundsLabel { get { return $"{this.ScreenBounds.Width}, {this.ScreenBounds.Height}"; }}
 
