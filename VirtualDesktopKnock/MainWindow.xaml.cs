@@ -1,19 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Timers;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using WindowsDesktop;
 
@@ -47,8 +34,8 @@ namespace VirtualDesktopKnock
 			try
 			{
 				this.vm.MousePosition = this.GetMousePosition();
-				this.vm.VirtualDesktopNumber = VirtualDesktop.Current.Id;
-				this.Move();
+				this.CheckLeftKnock();
+				this.CheckRightKnock();
 			}
 			catch
 			{
@@ -73,33 +60,116 @@ namespace VirtualDesktopKnock
 			return new Rect(0, 0, SystemParameters.VirtualScreenWidth, SystemParameters.VirtualScreenHeight);
 		}
 
-		private void Move()
+		private void CheckLeftKnock()
 		{
-			var currentVD = VirtualDesktop.Current;
-			var margin = 5;
+			var margin = 25;
+			var inTimeout = TimeSpan.TicksPerSecond / 2;
+			var outTimeout = TimeSpan.TicksPerSecond;
+
+			var knock = this.vm.KnockLeftHistory.PeekOrDefault();
+			var tickTime = DateTime.Now.Ticks;
+
+			// Expire any old knocks
+			if (knock != null && (tickTime - knock.InTime > inTimeout || (knock.OutTime != 0 && tickTime - knock.OutTime > outTimeout)))
+			{
+				this.vm.KnockLeftHistory.PopOrDefault();
+				this.vm.OnPropertyChanged("KnockHistoryLabel");
+				knock = null;
+			}
 
 			if (this.vm.MousePosition.X <= this.vm.ScreenBounds.X + margin)
 			{
+				if (knock == null || knock.OutTime != 0)
+				{
+					knock = new Knock(tickTime, 0);
+					this.vm.KnockLeftHistory.Push(knock);
+					this.vm.OnPropertyChanged("KnockHistoryLabel");
+				}
+
+			}
+			else
+			{
+				if (knock != null && knock.OutTime == 0)
+				{
+					knock.OutTime = tickTime;
+					this.vm.OnPropertyChanged("KnockHistoryLabel");
+				}
+			}
+
+			// Check for knock-knock
+			if (this.vm.KnockLeftHistory.Count >= 2)
+			{
+				this.vm.KnockLeftHistory.Clear();
+				this.vm.OnPropertyChanged("KnockHistoryLabel");
+
+				var currentVD = VirtualDesktop.Current;
 				var leftDesktop = currentVD.GetLeft();
 				if (leftDesktop != null)
 				{
 					WinApi.UnfocusForegroundWindow();
 					leftDesktop.Switch();
-					WinApi.SetCursorPos((int)this.vm.ScreenBounds.X + (int)this.vm.ScreenBounds.Width - margin - 1, (int)this.vm.MousePosition.Y);
+					//WinApi.SetCursorPos((int)this.vm.ScreenBounds.X + (int)this.vm.ScreenBounds.Width - margin - 1, (int)this.vm.MousePosition.Y);
+
+					this.vm.VirtualDesktopNumber = VirtualDesktop.Current.Id;
 				}
 			}
-			else if (this.vm.MousePosition.X >= this.vm.ScreenBounds.X + this.vm.ScreenBounds.Width - margin)
+			
+		}
+
+		private void CheckRightKnock()
+		{
+			var margin = 25;
+			var inTimeout = TimeSpan.TicksPerSecond / 2;
+			var outTimeout = TimeSpan.TicksPerSecond;
+
+			var knock = this.vm.KnockRightHistory.PeekOrDefault();
+			var tickTime = DateTime.Now.Ticks;
+
+			// Expire any old knocks
+			if (knock != null && (tickTime - knock.InTime > inTimeout || (knock.OutTime != 0 && tickTime - knock.OutTime > outTimeout)))
 			{
+				this.vm.KnockRightHistory.PopOrDefault();
+				this.vm.OnPropertyChanged("KnockHistoryLabel");
+				knock = null;
+			}
+
+			if (this.vm.MousePosition.X >= this.vm.ScreenBounds.X + this.vm.ScreenBounds.Width - margin)
+			{
+				if (knock == null || knock.OutTime != 0)
+				{
+					knock = new Knock(tickTime, 0);
+					this.vm.KnockRightHistory.Push(knock);
+					this.vm.OnPropertyChanged("KnockHistoryLabel");
+				}
+
+			}
+			else
+			{
+				if (knock != null && knock.OutTime == 0)
+				{
+					knock.OutTime = tickTime;
+					this.vm.OnPropertyChanged("KnockHistoryLabel");
+				}
+			}
+
+			// Check for knock-knock
+			if (this.vm.KnockRightHistory.Count >= 2)
+			{
+				this.vm.KnockRightHistory.Clear();
+				this.vm.OnPropertyChanged("KnockHistoryLabel");
+
+				var currentVD = VirtualDesktop.Current;
 				var rightDesktop = currentVD.GetRight();
 				if (rightDesktop != null)
 				{
 					WinApi.UnfocusForegroundWindow();
 					rightDesktop.Switch();
-					WinApi.SetCursorPos((int)this.vm.ScreenBounds.X + margin - 1, (int)this.vm.MousePosition.Y);
+					this.vm.VirtualDesktopNumber = VirtualDesktop.Current.Id;
+					//WinApi.SetCursorPos((int)this.vm.ScreenBounds.X + (int)this.vm.ScreenBounds.Width - margin - 1, (int)this.vm.MousePosition.Y);
 				}
 			}
 
-			this.vm.VirtualDesktopNumber = VirtualDesktop.Current.Id;
 		}
+
 	}
 }
