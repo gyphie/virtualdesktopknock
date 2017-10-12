@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using WindowsDesktop;
 
 namespace VirtualDesktopKnock
 {
@@ -32,10 +33,11 @@ namespace VirtualDesktopKnock
 
 			this.vm = new MainWindowViewModel();
 			this.vm.ScreenBounds = this.GetScreenSize();
+			this.vm.VirtualDesktopNumber = VirtualDesktop.Current.Id;
 			this.DataContext = this.vm;
 
 			this.mouseTimer = new DispatcherTimer();
-			this.mouseTimer.Interval = new TimeSpan(0, 0, 0, 0, 1);
+			this.mouseTimer.Interval = new TimeSpan(0, 0, 0, 0, 50);
 			this.mouseTimer.Tick += MouseTimer_Tick;
 			this.mouseTimer.Start();
 		}
@@ -45,7 +47,8 @@ namespace VirtualDesktopKnock
 			try
 			{
 				this.vm.MousePosition = this.GetMousePosition();
-				//Debug.WriteLine($"{mp.X}, {mp.Y}");
+				this.vm.VirtualDesktopNumber = VirtualDesktop.Current.Id;
+				this.Move();
 			}
 			catch
 			{
@@ -69,6 +72,34 @@ namespace VirtualDesktopKnock
 		{
 			return new Rect(0, 0, SystemParameters.VirtualScreenWidth, SystemParameters.VirtualScreenHeight);
 		}
-		
+
+		private void Move()
+		{
+			var currentVD = VirtualDesktop.Current;
+			var margin = 5;
+
+			if (this.vm.MousePosition.X <= this.vm.ScreenBounds.X + margin)
+			{
+				var leftDesktop = currentVD.GetLeft();
+				if (leftDesktop != null)
+				{
+					WinApi.UnfocusForegroundWindow();
+					leftDesktop.Switch();
+					WinApi.SetCursorPos((int)this.vm.ScreenBounds.X + (int)this.vm.ScreenBounds.Width - margin - 1, (int)this.vm.MousePosition.Y);
+				}
+			}
+			else if (this.vm.MousePosition.X >= this.vm.ScreenBounds.X + this.vm.ScreenBounds.Width - margin)
+			{
+				var rightDesktop = currentVD.GetRight();
+				if (rightDesktop != null)
+				{
+					WinApi.UnfocusForegroundWindow();
+					rightDesktop.Switch();
+					WinApi.SetCursorPos((int)this.vm.ScreenBounds.X + margin - 1, (int)this.vm.MousePosition.Y);
+				}
+			}
+
+			this.vm.VirtualDesktopNumber = VirtualDesktop.Current.Id;
+		}
 	}
 }
