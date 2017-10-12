@@ -11,8 +11,10 @@ namespace VirtualDesktopKnock
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		private const double mouseInsideMargin = 25;
 		private DispatcherTimer mouseTimer;
 		private MainWindowViewModel vm;
+		private KnockStateMachine ksm;
 
 		public MainWindow()
 		{
@@ -22,6 +24,9 @@ namespace VirtualDesktopKnock
 			this.vm.ScreenBounds = this.GetScreenSize();
 			this.vm.VirtualDesktopNumber = VirtualDesktop.Current.Id;
 			this.DataContext = this.vm;
+
+			this.ksm = KnockStateMachine.GetMachine();
+			this.ksm.OnKnock += Ksm_OnKnock;
 
 			this.mouseTimer = new DispatcherTimer();
 			this.mouseTimer.Interval = new TimeSpan(0, 0, 0, 0, 50);
@@ -34,8 +39,19 @@ namespace VirtualDesktopKnock
 			try
 			{
 				this.vm.MousePosition = this.GetMousePosition();
-				this.CheckLeftKnock();
-				this.CheckRightKnock();
+
+				KnockStateMachine.MousePositions mouseSide = KnockStateMachine.MousePositions.Outside;
+				if (this.vm.MousePosition.X <= this.vm.ScreenBounds.X + mouseInsideMargin)
+				{
+					mouseSide = KnockStateMachine.MousePositions.Left;
+				}
+				else if (this.vm.MousePosition.X >= this.vm.ScreenBounds.X + this.vm.ScreenBounds.Width - mouseInsideMargin)
+				{
+					mouseSide = KnockStateMachine.MousePositions.Right;
+				}
+
+				this.ksm.UpdateState(mouseSide);
+
 			}
 			catch
 			{
@@ -60,116 +76,16 @@ namespace VirtualDesktopKnock
 			return new Rect(0, 0, SystemParameters.VirtualScreenWidth, SystemParameters.VirtualScreenHeight);
 		}
 
-		private void CheckLeftKnock()
+		private void Ksm_OnKnock(object sender, KnockStateMachine.KnockEventArgs e)
 		{
-			var margin = 25;
-			var inTimeout = TimeSpan.TicksPerSecond / 2;
-			var outTimeout = TimeSpan.TicksPerSecond;
-
-			var knock = this.vm.KnockLeftHistory.PeekOrDefault();
-			var tickTime = DateTime.Now.Ticks;
-
-			// Expire any old knocks
-			if (knock != null && (tickTime - knock.InTime > inTimeout || (knock.OutTime != 0 && tickTime - knock.OutTime > outTimeout)))
+			var currentVD = VirtualDesktop.Current;
+			var nextDesktop = e.Side == KnockStateMachine.KnockEventArgs.Sides.Left ? currentVD.GetLeft() : currentVD.GetRight();
+			if (nextDesktop != null)
 			{
-				this.vm.KnockLeftHistory.PopOrDefault();
-				this.vm.OnPropertyChanged("KnockHistoryLabel");
-				knock = null;
+				WinApi.UnfocusForegroundWindow();
+				nextDesktop.Switch();
+				this.vm.VirtualDesktopNumber = VirtualDesktop.Current.Id;
 			}
-
-			if (this.vm.MousePosition.X <= this.vm.ScreenBounds.X + margin)
-			{
-				if (knock == null || knock.OutTime != 0)
-				{
-					knock = new Knock(tickTime, 0);
-					this.vm.KnockLeftHistory.Push(knock);
-					this.vm.OnPropertyChanged("KnockHistoryLabel");
-				}
-
-			}
-			else
-			{
-				if (knock != null && knock.OutTime == 0)
-				{
-					knock.OutTime = tickTime;
-					this.vm.OnPropertyChanged("KnockHistoryLabel");
-				}
-			}
-
-			// Check for knock-knock
-			if (this.vm.KnockLeftHistory.Count >= 2)
-			{
-				this.vm.KnockLeftHistory.Clear();
-				this.vm.OnPropertyChanged("KnockHistoryLabel");
-
-				var currentVD = VirtualDesktop.Current;
-				var leftDesktop = currentVD.GetLeft();
-				if (leftDesktop != null)
-				{
-					WinApi.UnfocusForegroundWindow();
-					leftDesktop.Switch();
-					//WinApi.SetCursorPos((int)this.vm.ScreenBounds.X + (int)this.vm.ScreenBounds.Width - margin - 1, (int)this.vm.MousePosition.Y);
-
-					this.vm.VirtualDesktopNumber = VirtualDesktop.Current.Id;
-				}
-			}
-			
 		}
-
-		private void CheckRightKnock()
-		{
-			var margin = 25;
-			var inTimeout = TimeSpan.TicksPerSecond / 2;
-			var outTimeout = TimeSpan.TicksPerSecond;
-
-			var knock = this.vm.KnockRightHistory.PeekOrDefault();
-			var tickTime = DateTime.Now.Ticks;
-
-			// Expire any old knocks
-			if (knock != null && (tickTime - knock.InTime > inTimeout || (knock.OutTime != 0 && tickTime - knock.OutTime > outTimeout)))
-			{
-				this.vm.KnockRightHistory.PopOrDefault();
-				this.vm.OnPropertyChanged("KnockHistoryLabel");
-				knock = null;
-			}
-
-			if (this.vm.MousePosition.X >= this.vm.ScreenBounds.X + this.vm.ScreenBounds.Width - margin)
-			{
-				if (knock == null || knock.OutTime != 0)
-				{
-					knock = new Knock(tickTime, 0);
-					this.vm.KnockRightHistory.Push(knock);
-					this.vm.OnPropertyChanged("KnockHistoryLabel");
-				}
-
-			}
-			else
-			{
-				if (knock != null && knock.OutTime == 0)
-				{
-					knock.OutTime = tickTime;
-					this.vm.OnPropertyChanged("KnockHistoryLabel");
-				}
-			}
-
-			// Check for knock-knock
-			if (this.vm.KnockRightHistory.Count >= 2)
-			{
-				this.vm.KnockRightHistory.Clear();
-				this.vm.OnPropertyChanged("KnockHistoryLabel");
-
-				var currentVD = VirtualDesktop.Current;
-				var rightDesktop = currentVD.GetRight();
-				if (rightDesktop != null)
-				{
-					WinApi.UnfocusForegroundWindow();
-					rightDesktop.Switch();
-					this.vm.VirtualDesktopNumber = VirtualDesktop.Current.Id;
-					//WinApi.SetCursorPos((int)this.vm.ScreenBounds.X + (int)this.vm.ScreenBounds.Width - margin - 1, (int)this.vm.MousePosition.Y);
-				}
-			}
-
-		}
-
 	}
 }
