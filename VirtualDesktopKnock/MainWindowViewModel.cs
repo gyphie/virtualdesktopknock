@@ -13,11 +13,8 @@ namespace VirtualDesktopKnock
 		public MainWindowViewModel()
 		{
 			this.MousePosition = new Point(0, 0);
-			this.ScreenNumber = 0;
 			this.VirtualDesktopNumber = Guid.Empty;
 			this.ScreenBounds = new Rect();
-			this.knockLeftHistory = new Stack<Knock>(4);
-			this.knockRightHistory = new Stack<Knock>(4);
 		}
 
 		private Point mousePosition;
@@ -44,7 +41,6 @@ namespace VirtualDesktopKnock
 		}
 		public string ScreenBoundsLabel { get { return $"{this.ScreenBounds.Width}, {this.ScreenBounds.Height}"; }}
 
-		public int ScreenNumber { get; set; }
 		private Guid virtualDesktopNumber;
 		public Guid VirtualDesktopNumber { get {
 				return this.virtualDesktopNumber;
@@ -61,32 +57,6 @@ namespace VirtualDesktopKnock
 			get
 			{
 				return $"{this.MousePosition.X}, {this.MousePosition.Y}";
-			}
-		}
-
-		public string KnockHistoryLabel
-		{
-			get
-			{
-				return string.Join("\n", this.KnockLeftHistory.Union(this.KnockRightHistory).Reverse().Select(a => $"In: {a.InTime}, Out: {a.OutTime}"));
-			}
-		}
-
-		private Stack<Knock> knockLeftHistory;
-		public Stack<Knock> KnockLeftHistory
-		{
-			get
-			{
-				return this.knockLeftHistory;
-			}
-		}
-
-		private Stack<Knock> knockRightHistory;
-		public Stack<Knock> KnockRightHistory
-		{
-			get
-			{
-				return this.knockRightHistory;
 			}
 		}
 
