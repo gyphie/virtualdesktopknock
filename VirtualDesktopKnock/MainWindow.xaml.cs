@@ -12,6 +12,7 @@ namespace VirtualDesktopKnock
 	public partial class MainWindow : Window
 	{
 		private const double mouseInsideMargin = 25;
+		private const double mouseOutsideMargin = 100;
 		private DispatcherTimer mouseTimer;
 		private MainWindowViewModel vm;
 		private KnockStateMachine ksm;
@@ -32,6 +33,15 @@ namespace VirtualDesktopKnock
 			this.mouseTimer.Interval = new TimeSpan(0, 0, 0, 0, 50);
 			this.mouseTimer.Tick += MouseTimer_Tick;
 			this.mouseTimer.Start();
+
+			//this.Hide();
+		}
+
+		protected override void OnInitialized(EventArgs e)
+		{
+			base.OnInitialized(e);
+			this.ShowInTaskbar = false;
+			this.Hide();
 		}
 
 		private void MouseTimer_Tick(object sender, EventArgs e)
@@ -40,17 +50,21 @@ namespace VirtualDesktopKnock
 			{
 				this.vm.MousePosition = this.GetMousePosition();
 
-				KnockStateMachine.MousePositions mouseSide = KnockStateMachine.MousePositions.Outside;
 				if (this.vm.MousePosition.X <= this.vm.ScreenBounds.X + mouseInsideMargin)
 				{
-					mouseSide = KnockStateMachine.MousePositions.Left;
+					this.ksm.UpdateState(KnockStateMachine.MousePositions.Left);
 				}
 				else if (this.vm.MousePosition.X >= this.vm.ScreenBounds.X + this.vm.ScreenBounds.Width - mouseInsideMargin)
 				{
-					mouseSide = KnockStateMachine.MousePositions.Right;
+					this.ksm.UpdateState(KnockStateMachine.MousePositions.Right);
 				}
+				else if (
+					this.vm.MousePosition.X >= this.vm.ScreenBounds.X + (mouseOutsideMargin) &&
+					this.vm.MousePosition.X <= this.vm.ScreenBounds.X + this.vm.ScreenBounds.Width - (mouseOutsideMargin))
+				{
 
-				this.ksm.UpdateState(mouseSide);
+					this.ksm.UpdateState(KnockStateMachine.MousePositions.Outside);
+				}
 
 			}
 			catch
@@ -61,14 +75,17 @@ namespace VirtualDesktopKnock
 
 		private System.Windows.Point GetMousePosition()
 		{
-			// Gets a mouse point for the virtual device (e.g., doesn't map to real screen pixels but is modified based on the Display Settings Scaling (DPI))
-			var deviceIndependentPosition = System.Windows.Forms.Control.MousePosition;
+			return WinApi.GetCursorPosition();
 
-			// Use a transform to convert to virtual point to real screen coordinates (note, this is a global point across all monitors)
-			var transform = PresentationSource.FromVisual(this).CompositionTarget.TransformFromDevice;
-			var realScreenPosition = transform.Transform(new System.Windows.Point(deviceIndependentPosition.X, deviceIndependentPosition.Y));
+			//// Gets a mouse point for the virtual device (e.g., doesn't map to real screen pixels but is modified based on the Display Settings Scaling (DPI))
+			//var deviceIndependentPosition = System.Windows.Forms.Control.MousePosition;
 
-			return realScreenPosition;
+			//// Use a transform to convert to virtual point to real screen coordinates (note, this is a global point across all monitors)
+			////var transform = PresentationSource.FromVisual(this).CompositionTarget.TransformFromDevice;
+			//var realScreenPosition = PointToScreen(new System.Windows.Point(deviceIndependentPosition.X, deviceIndependentPosition.Y));
+			////var realScreenPosition = transform.Transform(new System.Windows.Point(deviceIndependentPosition.X, deviceIndependentPosition.Y));
+
+			//return realScreenPosition;
 		}
 
 		private System.Windows.Rect GetScreenSize()

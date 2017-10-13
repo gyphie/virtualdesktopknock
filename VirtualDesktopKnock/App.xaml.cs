@@ -22,9 +22,6 @@ namespace VirtualDesktopKnock
 
 			this.components = new System.ComponentModel.Container();
 			this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
-			this.notifyIcon.Icon = VirtualDesktopKnock.Properties.Resources.TrayIcon;
-			this.notifyIcon.Text = "Virtual Desktop Knock";
-			this.notifyIcon.Visible = true;
 
 			var exitMenu = new System.Windows.Forms.MenuItem("Exit");
 			exitMenu.Index = 0;
@@ -33,6 +30,10 @@ namespace VirtualDesktopKnock
 			var contextMenu = new System.Windows.Forms.ContextMenu();
 			contextMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] { exitMenu });
 			this.notifyIcon.ContextMenu = contextMenu;
+
+			this.notifyIcon.Icon = VirtualDesktopKnock.Properties.Resources.TrayIcon;
+			this.notifyIcon.Text = "Virtual Desktop Knock";
+			this.notifyIcon.Visible = true;
 		}
 
 		private void NotifyIconContextMenuExitItem_Click(object sender, EventArgs e)
