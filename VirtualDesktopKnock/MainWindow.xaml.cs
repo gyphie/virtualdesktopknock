@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Threading;
+using Microsoft.Win32;
 using WindowsDesktop;
 
 namespace VirtualDesktopKnock
@@ -34,7 +35,7 @@ namespace VirtualDesktopKnock
 			this.mouseTimer.Tick += MouseTimer_Tick;
 			this.mouseTimer.Start();
 
-			//this.Hide();
+			SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
 		}
 
 		protected override void OnInitialized(EventArgs e)
@@ -48,7 +49,8 @@ namespace VirtualDesktopKnock
 		{
 			try
 			{
-				this.vm.MousePosition = this.GetMousePosition();
+				this.vm.MousePosition = WinApi.GetCursorPosition();
+
 
 				if (this.vm.MousePosition.X <= this.vm.ScreenBounds.X + mouseInsideMargin)
 				{
@@ -73,21 +75,6 @@ namespace VirtualDesktopKnock
 			}
 		}
 
-		private System.Windows.Point GetMousePosition()
-		{
-			return WinApi.GetCursorPosition();
-
-			//// Gets a mouse point for the virtual device (e.g., doesn't map to real screen pixels but is modified based on the Display Settings Scaling (DPI))
-			//var deviceIndependentPosition = System.Windows.Forms.Control.MousePosition;
-
-			//// Use a transform to convert to virtual point to real screen coordinates (note, this is a global point across all monitors)
-			////var transform = PresentationSource.FromVisual(this).CompositionTarget.TransformFromDevice;
-			//var realScreenPosition = PointToScreen(new System.Windows.Point(deviceIndependentPosition.X, deviceIndependentPosition.Y));
-			////var realScreenPosition = transform.Transform(new System.Windows.Point(deviceIndependentPosition.X, deviceIndependentPosition.Y));
-
-			//return realScreenPosition;
-		}
-
 		private System.Windows.Rect GetScreenSize()
 		{
 			return new Rect(0, 0, SystemParameters.VirtualScreenWidth, SystemParameters.VirtualScreenHeight);
@@ -104,5 +91,12 @@ namespace VirtualDesktopKnock
 				this.vm.VirtualDesktopNumber = VirtualDesktop.Current.Id;
 			}
 		}
+
+		private void SystemEvents_DisplaySettingsChanged(object sender, EventArgs e)
+		{
+			this.vm.ScreenBounds = this.GetScreenSize();
+		}
+
+
 	}
 }

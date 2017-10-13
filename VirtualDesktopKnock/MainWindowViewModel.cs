@@ -13,7 +13,6 @@ namespace VirtualDesktopKnock
 		public MainWindowViewModel()
 		{
 			this.MousePosition = new Point(0, 0);
-			this.ScreenNumber = 0;
 			this.VirtualDesktopNumber = Guid.Empty;
 			this.ScreenBounds = new Rect();
 		}
@@ -42,7 +41,6 @@ namespace VirtualDesktopKnock
 		}
 		public string ScreenBoundsLabel { get { return $"{this.ScreenBounds.Width}, {this.ScreenBounds.Height}"; }}
 
-		public int ScreenNumber { get; set; }
 		private Guid virtualDesktopNumber;
 		public Guid VirtualDesktopNumber { get {
 				return this.virtualDesktopNumber;
