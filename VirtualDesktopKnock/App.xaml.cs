@@ -31,7 +31,7 @@ namespace VirtualDesktopKnock
 			contextMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] { exitMenu });
 			this.notifyIcon.ContextMenu = contextMenu;
 
-			this.notifyIcon.Icon = VirtualDesktopKnock.Properties.Resources.TrayIcon;
+			this.notifyIcon.Icon = new System.Drawing.Icon(VirtualDesktopKnock.Properties.Resources.TrayIcon, System.Windows.Forms.SystemInformation.SmallIconSize);
 			this.notifyIcon.Text = "Virtual Desktop Knock";
 			this.notifyIcon.Visible = true;
 		}

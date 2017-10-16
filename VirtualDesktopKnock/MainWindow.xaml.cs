@@ -14,6 +14,8 @@ namespace VirtualDesktopKnock
 	{
 		private const double mouseInsideMargin = 25;
 		private const double mouseOutsideMargin = 100;
+		private const double mouseTopMargin = 50;
+		private const double mouseBottomMargin = 50;
 		private DispatcherTimer mouseTimer;
 		private MainWindowViewModel vm;
 		private KnockStateMachine ksm;
@@ -51,15 +53,23 @@ namespace VirtualDesktopKnock
 			{
 				this.vm.MousePosition = WinApi.GetCursorPosition();
 
+				if (this.vm.MousePosition.Y < mouseTopMargin || this.vm.MousePosition.Y > (this.vm.ScreenBounds.Height - mouseBottomMargin))
+				{
+					return; // Mouse was along the top or along the bottom and because there are many windows controls and the start bar in these regions we don't want to knock.
+				}
 
+
+				// Left
 				if (this.vm.MousePosition.X <= this.vm.ScreenBounds.X + mouseInsideMargin)
 				{
 					this.ksm.UpdateState(KnockStateMachine.MousePositions.Left);
 				}
+				// Right
 				else if (this.vm.MousePosition.X >= this.vm.ScreenBounds.X + this.vm.ScreenBounds.Width - mouseInsideMargin)
 				{
 					this.ksm.UpdateState(KnockStateMachine.MousePositions.Right);
 				}
+				// Middle
 				else if (
 					this.vm.MousePosition.X >= this.vm.ScreenBounds.X + (mouseOutsideMargin) &&
 					this.vm.MousePosition.X <= this.vm.ScreenBounds.X + this.vm.ScreenBounds.Width - (mouseOutsideMargin))
