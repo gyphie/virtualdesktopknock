@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using WindowsDesktop;
@@ -13,7 +14,7 @@ namespace VirtualDesktopKnock
 	public partial class MainWindow : Window
 	{
 		private const double mouseInsideMargin = 25;
-		private const double mouseOutsideMargin = 100;
+		private const double mouseOutsideMargin = 150;
 		private const double mouseTopMargin = 50;
 		private const double mouseBottomMargin = 50;
 		private DispatcherTimer mouseTimer;
@@ -71,8 +72,8 @@ namespace VirtualDesktopKnock
 				}
 				// Middle
 				else if (
-					this.vm.MousePosition.X >= this.vm.ScreenBounds.X + (mouseOutsideMargin) &&
-					this.vm.MousePosition.X <= this.vm.ScreenBounds.X + this.vm.ScreenBounds.Width - (mouseOutsideMargin))
+					this.vm.MousePosition.X >= this.vm.ScreenBounds.X + mouseOutsideMargin &&
+					this.vm.MousePosition.X <= this.vm.ScreenBounds.X + this.vm.ScreenBounds.Width - mouseOutsideMargin)
 				{
 
 					this.ksm.UpdateState(KnockStateMachine.MousePositions.Outside);

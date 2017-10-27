@@ -20,10 +20,7 @@ namespace VirtualDesktopKnock
 		private Point mousePosition;
 		public Point MousePosition
 		{
-			get
-			{
-				return this.mousePosition;
-			}
+			get { return this.mousePosition; }
 			set
 			{
 				this.mousePosition = value;
@@ -42,9 +39,8 @@ namespace VirtualDesktopKnock
 		public string ScreenBoundsLabel { get { return $"{this.ScreenBounds.Width}, {this.ScreenBounds.Height}"; }}
 
 		private Guid virtualDesktopNumber;
-		public Guid VirtualDesktopNumber { get {
-				return this.virtualDesktopNumber;
-			}
+		public Guid VirtualDesktopNumber {
+			get { return this.virtualDesktopNumber; }
 			set
 			{
 				this.virtualDesktopNumber = value;
@@ -54,10 +50,7 @@ namespace VirtualDesktopKnock
 
 		public string MousePositionLabel
 		{
-			get
-			{
-				return $"{this.MousePosition.X}, {this.MousePosition.Y}";
-			}
+			get { return $"{this.MousePosition.X}, {this.MousePosition.Y}"; }
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;

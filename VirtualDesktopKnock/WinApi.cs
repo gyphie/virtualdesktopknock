@@ -46,13 +46,10 @@ namespace VirtualDesktopKnock
 		/// Retrieves the cursor's position, in screen coordinates.
 		/// </summary>
 		/// <see>See MSDN documentation for further information.</see>
-
 		public static Point GetCursorPosition()
 		{
 			POINT lpPoint;
-			GetCursorPos(out lpPoint);
-			//bool success = User32.GetCursorPos(out lpPoint);
-			// if (!success)
+			WinApi.GetCursorPos(out lpPoint);
 
 			return lpPoint;
 		}
