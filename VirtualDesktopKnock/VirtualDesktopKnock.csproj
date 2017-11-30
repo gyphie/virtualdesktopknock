@@ -41,6 +41,9 @@
     <ApplicationIcon>Resources\TrayIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="InputSimulator">
+      <HintPath>..\dependencies\InputSimulator\InputSimulator.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -53,12 +56,6 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="VirtualDesktop">
-      <HintPath>..\dependencies\VirtualDesktop\VirtualDesktop.dll</HintPath>
-    </Reference>
-    <Reference Include="VirtualDesktop.WPF">
-      <HintPath>..\dependencies\VirtualDesktop\VirtualDesktop.WPF.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />

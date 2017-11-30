@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Threading;
 using Microsoft.Win32;
-using WindowsDesktop;
+using WindowsInput;
 
 namespace VirtualDesktopKnock
 {
@@ -13,7 +13,7 @@ namespace VirtualDesktopKnock
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		private const double mouseInsideMargin = 25;
+		private const double mouseInsideMargin = 75;
 		private const double mouseOutsideMargin = 150;
 		private const double mouseTopMargin = 50;
 		private const double mouseBottomMargin = 50;
@@ -27,7 +27,6 @@ namespace VirtualDesktopKnock
 
 			this.vm = new MainWindowViewModel();
 			this.vm.ScreenBounds = this.GetScreenSize();
-			this.vm.VirtualDesktopNumber = VirtualDesktop.Current.Id;
 			this.DataContext = this.vm;
 
 			this.ksm = KnockStateMachine.GetMachine();
@@ -93,14 +92,14 @@ namespace VirtualDesktopKnock
 
 		private void Ksm_OnKnock(object sender, KnockStateMachine.KnockEventArgs e)
 		{
-			var currentVD = VirtualDesktop.Current;
-			var nextDesktop = e.Side == KnockStateMachine.KnockEventArgs.Sides.Left ? currentVD.GetLeft() : currentVD.GetRight();
-			if (nextDesktop != null)
-			{
-				WinApi.UnfocusForegroundWindow();
-				nextDesktop.Switch();
-				this.vm.VirtualDesktopNumber = VirtualDesktop.Current.Id;
-			}
+			InputSimulator.SimulateKeyDown(VirtualKeyCode.CONTROL);
+			InputSimulator.SimulateKeyDown(VirtualKeyCode.LWIN);
+
+			var arrowKey = e.Side == KnockStateMachine.KnockEventArgs.Sides.Left ? VirtualKeyCode.LEFT : VirtualKeyCode.RIGHT;
+			InputSimulator.SimulateKeyPress(arrowKey);
+
+			InputSimulator.SimulateKeyUp(VirtualKeyCode.LWIN);
+			InputSimulator.SimulateKeyUp(VirtualKeyCode.CONTROL);
 		}
 
 		private void SystemEvents_DisplaySettingsChanged(object sender, EventArgs e)
