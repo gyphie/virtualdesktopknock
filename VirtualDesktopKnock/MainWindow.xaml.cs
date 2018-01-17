@@ -14,7 +14,7 @@ namespace VirtualDesktopKnock
 	public partial class MainWindow : Window
 	{
 		private const double mouseInsideMargin = 75;
-		private const double mouseOutsideMargin = 150;
+		private double mouseOutsideMargin = 200;
 		private const double mouseTopMargin = 50;
 		private const double mouseBottomMargin = 50;
 		private DispatcherTimer mouseTimer;
@@ -28,6 +28,8 @@ namespace VirtualDesktopKnock
 			this.vm = new MainWindowViewModel();
 			this.vm.ScreenBounds = this.GetScreenSize();
 			this.DataContext = this.vm;
+
+			this.mouseOutsideMargin = Math.Floor(this.vm.ScreenBounds.Width * 0.15d);
 
 			this.ksm = KnockStateMachine.GetMachine();
 			this.ksm.OnKnock += Ksm_OnKnock;
