@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -18,7 +19,8 @@ namespace VirtualDesktopKnock
 		static extern bool SetCursorPos(int X, int Y);
 		[DllImport("User32.dll")]
 		static extern int SendMessage(IntPtr hWnd, int wMsg, IntPtr wParam, IntPtr lParam);
-
+		[DllImport("user32.dll")]
+		static extern bool SetForegroundWindow(IntPtr hwnd);
 
 		const int WM_KILLFOCUS = 0x0008;
 
@@ -52,6 +54,14 @@ namespace VirtualDesktopKnock
 			WinApi.GetCursorPos(out lpPoint);
 
 			return lpPoint;
+		}
+
+		public static void SetForegroundWindow(Process process)
+		{
+			if (process != null)
+			{
+				SetForegroundWindow(process.MainWindowHandle);
+			}
 		}
 	}
 }

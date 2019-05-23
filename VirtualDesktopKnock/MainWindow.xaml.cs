@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Threading;
@@ -94,6 +95,12 @@ namespace VirtualDesktopKnock
 
 		private void Ksm_OnKnock(object sender, KnockStateMachine.KnockEventArgs e)
 		{
+			// Some applications capture keystrokes  or are running with elevated privileges and disrupt the simulated keystrokes.
+			// So focus on the TaskBar and then wait a moment for the focus to change. Then send the keystrokes
+			WinApi.SetForegroundWindow(Process.GetProcessesByName("explorer").FirstOrDefault());
+
+			System.Threading.Thread.Sleep(10);
+
 			InputSimulator.SimulateKeyDown(VirtualKeyCode.CONTROL);
 			InputSimulator.SimulateKeyDown(VirtualKeyCode.LWIN);
 
